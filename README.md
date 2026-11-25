@@ -1,10 +1,20 @@
 # GoDeeper
 
+[![CI](https://github.com/okamifish/godeeper-public/actions/workflows/ci.yml/badge.svg)](https://github.com/okamifish/godeeper-public/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 GoDeeper is an AI-assisted spatial thinking canvas. You build a graph of notes, questions, sources and results, and use AI to deepen one branch at a time instead of generating a wall of text.
 
 This repository is the **community edition**: the open core. It contains the canvas engine, tasks and context, BYOK AI, Markdown/HTML reports, publishing and comments, one cloud canvas, and the basic admin surface.
 
 The commercial Pro edition is assembled from this core plus a private plugin. Pro-only features (multi-canvas, trash restore, cross-canvas search and mentions, concept cards, Socratic questioning, guided exploration, AI-organized reports, PDF export, team collaboration) are **not** part of this repository. The public `packages/pro-contract` and `packages/pro-stub` define the interface and the empty implementation.
+
+## Documentation
+
+- [Architecture](./docs/architecture.md)
+- [Self-hosting](./docs/self-hosting.md)
+- [Community edition vs Pro](./docs/editions.md)
+- [Release notes 0.2.0](./docs/releases/v0.2.0.md)
 
 ## Stack
 
@@ -28,10 +38,13 @@ npm install
 cp .env.example .env
 # fill DATABASE_URL, SUPABASE_URL, SUPABASE_SECRET_KEY, ENCRYPTION_KEY
 npm run db:migrate
+npm run db:seed
 npm run dev
 ```
 
 The API runs on `http://localhost:3001`. `GET /health` returns `edition: "stub"` for the community edition.
+
+On Windows you can also run `start-godeeper.cmd`; it creates the env files from the examples and opens both dev servers.
 
 ### 3. Frontend
 
@@ -70,7 +83,11 @@ npx next build
 
 - Never commit `.env`, `.env.local`, API keys, database passwords or service-role keys.
 - AI keys are stored encrypted per user; BYOK means the provider bills the user directly.
-- If you find a security issue, please open a private advisory instead of a public issue.
+- If you find a security issue, please follow [SECURITY.md](./SECURITY.md) instead of opening a public issue.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md). The community edition must stay independently buildable; do not add dependencies on the private Pro repository.
 
 ## License
 

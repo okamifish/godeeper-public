@@ -1,0 +1,75 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# Build output
+frontend/.next/
+frontend/out/
+backend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+npm-debug.log*
+*.log
+*.pid
+
+# Local agent tooling
+.agents/
+.claude/
+.playwright-mcp/
+/package.json
+/package-lock.json
+/skills-lock.json
+
+# Local reference files
+/supabase-*.png
+supabase/config.local.toml
+supabase/.temp/
+supabase/.branches/
+*.zip
+
+# Local logs and sensitive notes
+logs/
+info/
+
+# Generated / test artifacts
+frontend/storybook-static/
+frontend/test-artifacts/
+*.tsbuildinfo
+
+# Temporary local screenshots
+frontend/upload url.png
+
+# CodeGraph index
+.codegraph/
+
+# Test coverage
+frontend/coverage/
+
+# Vercel
+frontend/.vercel/
+
+# Debug screenshots & temp files
+test-*.png
+debug-screenshot.png
+docs/_*.png
+*.html
+!docs/*.html
+!frontend/src/app/**/*.html
+!frontend/public/*.html
+docs/_type_probe*.html

@@ -1,0 +1,1 @@
+ALTER TABLE "canvases" ADD COLUMN "allow_public_comments" boolean DEFAULT true NOT NULL;

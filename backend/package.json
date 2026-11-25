@@ -1,0 +1,43 @@
+{
+  "name": "godeeper-backend",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "node scripts/seed-plans.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.64",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@godeeper/pro-backend": "file:../packages/pro-stub",
+    "@godeeper/pro-contract": "file:../packages/pro-contract",
+    "@hono/node-server": "^1.14.0",
+    "@hono/zod-validator": "^0.5.0",
+    "@supabase/supabase-js": "^2.105.4",
+    "ai": "^6.0.184",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.0",
+    "hono": "^4.7.0",
+    "postgres": "^3.4.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-attachment": "0.2.1-rc.2",
+    "@types/node": "^22.15.0",
+    "drizzle-kit": "^0.31.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  }
+}

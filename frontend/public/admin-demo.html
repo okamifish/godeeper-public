@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoDeeper 管理后台 Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f9fafb;--card:#fff;--border:#e5e7eb;--text:#111827;--text2:#6b7280;--primary:#2563eb;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--sidebar:#111827;--radius:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+aside{width:220px;background:var(--sidebar);padding:16px 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
+aside .logo{padding:0 16px 16px;border-bottom:1px solid #374151;margin-bottom:8px}
+aside .logo h2{font-size:14px;color:#f9fafb;font-weight:600}
+aside .logo p{font-size:11px;color:#9ca3af;margin-top:2px}
+aside nav{flex:1;padding:8px}
+aside nav a{display:block;padding:8px 12px;border-radius:6px;font-size:13px;text-decoration:none;color:#9ca3af;margin-bottom:2px;cursor:pointer;transition:all .15s}
+aside nav a:hover{color:#f3f4f6;background:#1f2937}
+aside nav a.active{color:#f9fafb;background:#1f2937}
+aside .back{padding:0 8px}
+aside .back a{display:block;padding:8px 12px;border-radius:6px;font-size:13px;text-decoration:none;color:#9ca3af}
+main{margin-left:220px;flex:1;padding:24px;max-width:1200px}
+.banner{margin-bottom:16px;padding:8px 16px;border-radius:var(--radius);background:#fef3c7;color:#92400e;font-size:12px;display:flex;align-items:center;gap:8px}
+.page{display:none}.page.active{display:block}
+.page h1{font-size:20px;font-weight:700}.page .sub{font-size:13px;color:var(--text2);margin-top:2px}
+.cards{display:grid;gap:12px;margin-top:16px}
+.cards.c5{grid-template-columns:repeat(5,1fr)}.cards.c6{grid-template-columns:repeat(6,1fr)}.cards.c3{grid-template-columns:repeat(3,1fr)}.cards.c2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card .label{font-size:12px;color:var(--text2);font-weight:500;display:flex;align-items:center;justify-content:space-between}
+.card .value{font-size:24px;font-weight:700;margin-top:4px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;background:#f9fafb;border-bottom:1px solid var(--border);font-weight:500;color:var(--text2);font-size:12px}
+td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.badge.green{background:#d1fae5;color:#065f46}.badge.blue{background:#dbeafe;color:#1e40af}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.gray{background:#f3f4f6;color:#374151}.badge.purple{background:#ede9fe;color:#5b21b6}
+.chart-bar{display:flex;align-items:flex-end;gap:3px;height:180px;padding-top:8px}
+.chart-bar .bar{flex:1;background:var(--primary);border-radius:3px 3px 0 0;min-width:8px;opacity:.85;transition:opacity .15s}
+.chart-bar .bar:hover{opacity:1}
+.chart-bar .bar.alt{background:var(--purple)}
+.pie-row{display:flex;align-items:center;gap:24px}
+.pie-legend{flex:1}
+.pie-legend .row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.prompt-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px}
+.prompt-card .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.prompt-card pre{white-space:pre-wrap;font-size:12px;color:var(--text2);font-family:monospace;max-height:80px;overflow:auto}
+input,select{padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);width:100%}
+.btn{padding:8px 16px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:500}
+.btn.primary{background:var(--primary);color:#fff}.btn.outline{background:var(--card);border:1px solid var(--border)}
+.strip{border:1px dashed var(--amber);border-radius:var(--radius);padding:12px 16px;background:rgba(245,158,11,.05);margin-top:16px}
+.strip b{color:#92400e;font-size:13px}.strip ul{margin-top:6px;font-size:12px;color:var(--text2);padding-left:18px}.strip li{margin:3px 0}
+.section{margin-top:20px}
+.space-y>*+*{margin-top:8px}
+@media(max-width:900px){.cards.c5,.cards.c6{grid-template-columns:repeat(2,1fr)}.cards.c3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="logo"><h2>GoDeeper 管理后台</h2><p>demo 模式 · 示例数据</p></div>
+  <nav id="nav">
+    <a class="active" data-page="dashboard">仪表盘</a>
+    <a data-page="users">用户管理</a>
+    <a data-page="user-detail">用户详情</a>
+    <a data-page="canvases">画布管理</a>
+    <a data-page="ai-usage">AI 用量</a>
+    <a data-page="task-logs">任务日志</a>
+    <a data-page="models">模型配置</a>
+    <a data-page="prompts">Prompt 管理</a>
+    <a data-page="billing">会员计费</a>
+    <a data-page="risk">风控中心</a>
+    <a data-page="settings">系统设置</a>
+  </nav>
+  <div class="back"><a href="/">返回应用</a></div>
+</aside>
+
+<main>
+<div class="banner"><b>Demo 模式</b>静态示例页面，展示后台完整功能布局。</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="p-dashboard">
+  <h1>仪表盘</h1><p class="sub">GoDeeper 运营概览</p>
+  <div class="cards c5">
+    <div class="card"><div class="label">总用户数</div><div class="value">1,247</div></div>
+    <div class="card"><div class="label">总画布数</div><div class="value">3,892</div></div>
+    <div class="card"><div class="label">总节点数</div><div class="value">28,451</div></div>
+    <div class="card"><div class="label">今日 AI 调用</div><div class="value">387</div></div>
+    <div class="card"><div class="label">今日新用户</div><div class="value">23</div></div>
+  </div>
+  <div class="cards c6" style="margin-top:12px">
+    <div class="card"><div class="label">日活用户</div><div class="value">186</div></div>
+    <div class="card"><div class="label">深度分</div><div class="value">3.7</div></div>
+    <div class="card"><div class="label">今日 AI 成本</div><div class="value">$12.48</div></div>
+    <div class="card"><div class="label">重度用户</div><div class="value">34</div></div>
+    <div class="card"><div class="label">今日失败任务</div><div class="value">7</div></div>
+    <div class="card"><div class="label">风控告警</div><div class="value">2</div></div>
+  </div>
+  <div class="section"><div class="card"><h3>30 天趋势</h3><div class="chart-bar" id="trend-chart"></div></div></div>
+</div>
+
+<!-- USERS -->
+<div class="page" id="p-users">
+  <h1>用户管理</h1><p class="sub">管理用户账户和会员等级</p>
+  <div class="section"><div class="card"><h3>全部用户（6）</h3>
+    <table><thead><tr><th>邮箱</th><th>昵称</th><th>套餐</th><th>注册时间</th><th>操作</th></tr></thead><tbody>
+      <tr><td><a href="#" onclick="nav('user-detail');return false">alice@example.com</a></td><td>Alice Chen</td><td><span class="badge blue">专业版</span></td><td>2026/4/12</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+      <tr><td>bob@example.com</td><td>Bob Wang</td><td><span class="badge gray">免费版</span></td><td>2026/5/1</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+      <tr><td>carol@example.com</td><td>Carol Li</td><td><span class="badge purple">团队版</span></td><td>2026/3/20</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+      <tr><td>dave@example.com</td><td>Dave Zhang</td><td><span class="badge gray">免费版</span></td><td>2026/5/20</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+      <tr><td>eve@example.com</td><td>Eve Liu</td><td><span class="badge blue">专业版</span></td><td>2026/4/28</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+      <tr><td>frank@example.com</td><td>Frank Zhao</td><td><span class="badge gray">免费版</span></td><td>2026/5/15</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">切换等级</button></td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- USER DETAIL -->
+<div class="page" id="p-user-detail">
+  <a href="#" onclick="nav('users');return false" style="font-size:13px;color:var(--text2)">&larr; 返回用户列表</a>
+  <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+    <h1>Alice Chen</h1><span class="badge blue" style="font-size:12px;padding:4px 12px">专业版</span>
+  </div>
+  <p class="sub">alice@example.com</p>
+  <div class="cards c5" style="margin-top:16px">
+    <div class="card"><div class="label">画布数</div><div class="value">24</div></div>
+    <div class="card"><div class="label">节点数</div><div class="value">312</div></div>
+    <div class="card"><div class="label">AI 总调用</div><div class="value">1,247</div></div>
+    <div class="card"><div class="label">今日 AI</div><div class="value">15</div></div>
+    <div class="card"><div class="label">总成本</div><div class="value">$47.82</div></div>
+  </div>
+  <div class="cards c2" style="margin-top:12px">
+    <div class="card"><h3>用户信息</h3><div class="space-y" style="font-size:13px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">昵称</span><span>Alice Chen</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">API 提供商</span><span>siliconflow</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">注册时间</span><span>2026/4/12</span></div>
+    </div></div>
+    <div class="card"><h3>会员等级</h3><div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn outline">免费版</button><button class="btn primary">专业版</button><button class="btn outline">团队版</button>
+    </div></div>
+  </div>
+  <div class="section"><div class="card"><h3>最近活动</h3>
+    <table><thead><tr><th>类型</th><th>详情</th><th>时间</th></tr></thead><tbody>
+      <tr><td><span class="badge amber">任务执行</span></td><td>Analyze market trends</td><td>2026/5/26 10:12</td></tr>
+      <tr><td><span class="badge blue">创建画布</span></td><td>Q3 Strategy Planning</td><td>2026/5/26 09:30</td></tr>
+      <tr><td><span class="badge purple">AI 调用</span></td><td>Deep dive on competitors</td><td>2026/5/25 16:45</td></tr>
+      <tr><td><span class="badge amber">任务执行</span></td><td>Import and analyze source</td><td>2026/5/25 14:20</td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- CANVASES -->
+<div class="page" id="p-canvases">
+  <h1>画布管理</h1><p class="sub">查看和管理用户画布</p>
+  <div class="section"><div class="card"><h3>全部画布（5）</h3>
+    <table><thead><tr><th>标题</th><th>所有者</th><th style="text-align:right">节点数</th><th>可见性</th><th style="text-align:right">分享数</th><th>更新时间</th><th>操作</th></tr></thead><tbody>
+      <tr><td><b>Q3 Strategy Planning</b></td><td style="color:var(--text2)">alice@example.com</td><td style="text-align:right">45</td><td><span class="badge green">公开</span></td><td style="text-align:right">3</td><td style="color:var(--text2);font-size:12px">2026/5/26</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">操作</button></td></tr>
+      <tr><td><b>Product Roadmap 2026</b></td><td style="color:var(--text2)">carol@example.com</td><td style="text-align:right">112</td><td><span class="badge gray">私有</span></td><td style="text-align:right">0</td><td style="color:var(--text2);font-size:12px">2026/5/26</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">操作</button></td></tr>
+      <tr><td><b>Market Analysis</b></td><td style="color:var(--text2)">alice@example.com</td><td style="text-align:right">67</td><td><span class="badge green">公开</span></td><td style="text-align:right">7</td><td style="color:var(--text2);font-size:12px">2026/5/25</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">操作</button></td></tr>
+      <tr><td><b>Tech Stack Evaluation</b></td><td style="color:var(--text2)">eve@example.com</td><td style="text-align:right">28</td><td><span class="badge gray">私有</span></td><td style="text-align:right">1</td><td style="color:var(--text2);font-size:12px">2026/5/24</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">操作</button></td></tr>
+      <tr><td><b>User Research Notes</b></td><td style="color:var(--text2)">bob@example.com</td><td style="text-align:right">15</td><td><span class="badge gray">私有</span></td><td style="text-align:right">0</td><td style="color:var(--text2);font-size:12px">2026/5/25</td><td><button class="btn outline" style="padding:4px 8px;font-size:11px">操作</button></td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- AI USAGE -->
+<div class="page" id="p-ai-usage">
+  <h1>AI 用量</h1><p class="sub">追踪 AI 功能使用量、成本和配额情况</p>
+  <div class="cards c3" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card"><div class="label">AI 总调用</div><div class="value">12,847</div></div>
+    <div class="card"><div class="label">今日调用</div><div class="value">387</div></div>
+    <div class="card"><div class="label">AI 活跃用户</div><div class="value">42</div></div>
+    <div class="card"><div class="label">人均调用</div><div class="value">8.3</div></div>
+    <div class="card"><div class="label">30 天成本</div><div class="value">$384.21</div></div>
+    <div class="card"><div class="label">30 天 Token</div><div class="value">45.2M</div></div>
+  </div>
+  <div class="cards c2" style="margin-top:12px">
+    <div class="card"><h3>AI 调用趋势（30 天）</h3><div class="chart-bar" id="ai-trend-chart"></div></div>
+    <div class="card"><h3>免费用户配额命中率</h3><div style="text-align:center;padding:24px 0">
+      <div style="font-size:48px;font-weight:700;color:var(--primary)">2.6%</div>
+      <p style="color:var(--text2);font-size:13px;margin-top:8px">23 / 892 名免费用户触及每日限额</p>
+      <p style="color:var(--text2);font-size:11px;margin-top:12px">高命中率说明 AI 是核心付费转化触发点</p>
+    </div></div>
+  </div>
+  <div class="cards c2" style="margin-top:12px">
+    <div class="card"><h3>按功能成本分布（30 天）</h3><div class="pie-row">
+      <div style="width:160px;height:160px;border-radius:50%;background:conic-gradient(var(--primary) 0deg 248deg,var(--purple) 248deg 320deg,var(--amber) 320deg 360deg,var(--green) 360deg 400deg);flex-shrink:0"></div>
+      <div class="pie-legend">
+        <div class="row"><span>任务推理</span><span>$245.80（8,450 次）</span></div>
+        <div class="row"><span>来源分析</span><span>$67.30（2,340 次）</span></div>
+        <div class="row"><span>观点展开</span><span>$42.10（1,280 次）</span></div>
+        <div class="row"><span>灵感启发</span><span>$29.01（777 次）</span></div>
+      </div>
+    </div></div>
+    <div class="card"><h3>按模型成本分布（30 天）</h3><div class="pie-row">
+      <div style="width:160px;height:160px;border-radius:50%;background:conic-gradient(var(--primary) 0deg 130deg,var(--purple) 130deg 230deg,var(--amber) 230deg 290deg,var(--green) 290deg 330deg,#f97316 330deg 360deg);flex-shrink:0"></div>
+      <div class="pie-legend">
+        <div class="row"><span>deepseek-v4</span><span>$112.00（5,600）</span></div>
+        <div class="row"><span>gpt-4o</span><span>$160.00（3,200）</span></div>
+        <div class="row"><span>claude-sonnet-4</span><span>$84.00（2,100）</span></div>
+        <div class="row"><span>qwen-plus</span><span>$18.71（1,247）</span></div>
+        <div class="row"><span>gemini-2.5-pro</span><span>$9.50（700）</span></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="section"><div class="card"><h3>用户 AI 调用排行</h3>
+    <table><thead><tr><th>邮箱</th><th style="text-align:right">今日</th><th style="text-align:right">累计</th><th>套餐</th><th>配额状态</th></tr></thead><tbody>
+      <tr><td>carol@example.com</td><td style="text-align:right">34</td><td style="text-align:right">3,420</td><td><span class="badge purple">团队版</span></td><td style="color:var(--text2)">无限</td></tr>
+      <tr><td>alice@example.com</td><td style="text-align:right">15</td><td style="text-align:right">2,870</td><td><span class="badge blue">专业版</span></td><td style="color:var(--text2)">无限</td></tr>
+      <tr><td>eve@example.com</td><td style="text-align:right">8</td><td style="text-align:right">1,560</td><td><span class="badge blue">专业版</span></td><td style="color:var(--text2)">无限</td></tr>
+      <tr><td>frank@example.com</td><td style="text-align:right">5</td><td style="text-align:right">890</td><td><span class="badge gray">免费版</span></td><td style="color:var(--amber)">5/10</td></tr>
+      <tr><td>bob@example.com</td><td style="text-align:right">2</td><td style="text-align:right">340</td><td><span class="badge gray">免费版</span></td><td style="color:var(--text2)">2/10</td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- TASK LOGS -->
+<div class="page" id="p-task-logs">
+  <h1>任务日志</h1><p class="sub">监控 AI 任务执行记录和失败情况</p>
+  <div class="section"><div class="card"><h3>最近任务执行</h3>
+    <table><thead><tr><th>任务 ID</th><th>用户</th><th>模型</th><th style="text-align:right">Token</th><th style="text-align:right">耗时</th><th>状态</th><th>错误</th><th>时间</th></tr></thead><tbody>
+      <tr><td style="font-family:monospace;font-size:11px">t-a1b2c3</td><td>alice@example.com</td><td>deepseek-v4</td><td style="text-align:right">4,200</td><td style="text-align:right">2,340ms</td><td><span class="badge green">成功</span></td><td></td><td style="color:var(--text2);font-size:11px">5/26 10:12</td></tr>
+      <tr><td style="font-family:monospace;font-size:11px">t-d4e5f6</td><td>carol@example.com</td><td>gpt-4o</td><td style="text-align:right">6,000</td><td style="text-align:right">3,120ms</td><td><span class="badge green">成功</span></td><td></td><td style="color:var(--text2);font-size:11px">5/26 09:58</td></tr>
+      <tr><td style="font-family:monospace;font-size:11px">t-g7h8i9</td><td>alice@example.com</td><td>deepseek-v4</td><td style="text-align:right">1,200</td><td style="text-align:right">890ms</td><td><span class="badge red">失败</span></td><td style="color:var(--red);font-size:11px">Rate limit exceeded</td><td style="color:var(--text2);font-size:11px">5/26 09:45</td></tr>
+      <tr><td style="font-family:monospace;font-size:11px">t-j0k1l2</td><td>eve@example.com</td><td>claude-sonnet-4</td><td style="text-align:right">8,300</td><td style="text-align:right">4,560ms</td><td><span class="badge green">成功</span></td><td></td><td style="color:var(--text2);font-size:11px">5/26 09:30</td></tr>
+      <tr><td style="font-family:monospace;font-size:11px">t-m3n4o5</td><td>bob@example.com</td><td>qwen-plus</td><td style="text-align:right">3,000</td><td style="text-align:right">1,870ms</td><td><span class="badge green">成功</span></td><td></td><td style="color:var(--text2);font-size:11px">5/26 08:15</td></tr>
+      <tr><td style="font-family:monospace;font-size:11px">t-p6q7r8</td><td>frank@example.com</td><td>deepseek-v4</td><td style="text-align:right">2,100</td><td style="text-align:right">30,000ms</td><td><span class="badge amber">超时</span></td><td style="color:var(--red);font-size:11px">Request timeout</td><td style="color:var(--text2);font-size:11px">5/25 16:20</td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- MODELS -->
+<div class="page" id="p-models">
+  <h1>模型配置</h1><p class="sub">管理可用的 AI 模型和定价</p>
+  <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn primary">添加模型</button></div>
+  <div class="section"><div class="card"><table><thead><tr><th>名称</th><th>提供商</th><th>模型</th><th style="text-align:right">输入 $/1k</th><th style="text-align:right">输出 $/1k</th><th>状态</th><th>套餐</th><th></th></tr></thead><tbody>
+    <tr><td><b>DeepSeek V4</b></td><td>OpenRouter</td><td style="font-family:monospace;font-size:11px">deepseek-ai/DeepSeek-V4-Flash</td><td style="text-align:right">0.002</td><td style="text-align:right">0.008</td><td><span class="badge green">已启用</span></td><td style="font-size:11px">free,pro,team</td><td><a href="#" style="font-size:11px;color:var(--red)">删除</a></td></tr>
+    <tr><td><b>GPT-4o</b></td><td>OpenAI</td><td style="font-family:monospace;font-size:11px">gpt-4o</td><td style="text-align:right">0.005</td><td style="text-align:right">0.015</td><td><span class="badge green">已启用</span></td><td style="font-size:11px">pro,team</td><td><a href="#" style="font-size:11px;color:var(--red)">删除</a></td></tr>
+    <tr><td><b>Claude Sonnet 4</b></td><td>Anthropic</td><td style="font-family:monospace;font-size:11px">claude-sonnet-4-20250514</td><td style="text-align:right">0.003</td><td style="text-align:right">0.015</td><td><span class="badge green">已启用</span></td><td style="font-size:11px">pro,team</td><td><a href="#" style="font-size:11px;color:var(--red)">删除</a></td></tr>
+    <tr><td><b>Qwen Plus</b></td><td>OpenRouter</td><td style="font-family:monospace;font-size:11px">qwen-plus-latest</td><td style="text-align:right">0.0015</td><td style="text-align:right">0.006</td><td><span class="badge green">已启用</span></td><td style="font-size:11px">free,pro,team</td><td><a href="#" style="font-size:11px;color:var(--red)">删除</a></td></tr>
+    <tr><td><b>Gemini 2.5 Pro</b></td><td>OpenRouter</td><td style="font-family:monospace;font-size:11px">google/gemini-2.5-pro</td><td style="text-align:right">0.00125</td><td style="text-align:right">0.005</td><td><span class="badge red">已禁用</span></td><td style="font-size:11px">pro,team</td><td><a href="#" style="font-size:11px;color:var(--red)">删除</a></td></tr>
+  </tbody></table></div></div>
+</div>
+
+<!-- PROMPTS -->
+<div class="page" id="p-prompts">
+  <h1>Prompt 管理</h1><p class="sub">管理 AI Prompt 模板，编辑内容会自动提升版本号</p>
+  <div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn primary">新建 Prompt</button></div>
+  <div class="section">
+    <div class="prompt-card"><div class="head"><b style="font-size:13px">Task Reasoning</b><span class="badge gray">任务推理</span><span style="font-size:11px;color:var(--text2)">v3</span><div style="margin-left:auto;display:flex;gap:6px"><span class="badge green" style="cursor:pointer">已启用</span><button class="btn outline" style="padding:2px 8px;font-size:11px">编辑</button><a href="#" style="font-size:11px;color:var(--red)">删除</a></div></div><pre>You are an AI reasoning assistant. Break down the following task into structured insights. For each insight, provide:
+1. A clear title (max 50 chars)
+2. A brief explanation
+3. Related questions for deeper exploration
+
+Keep each insight focused and actionable.</pre></div>
+    <div class="prompt-card"><div class="head"><b style="font-size:13px">Source Analysis</b><span class="badge gray">来源分析</span><span style="font-size:11px;color:var(--text2)">v2</span><div style="margin-left:auto;display:flex;gap:6px"><span class="badge green" style="cursor:pointer">已启用</span><button class="btn outline" style="padding:2px 8px;font-size:11px">编辑</button><a href="#" style="font-size:11px;color:var(--red)">删除</a></div></div><pre>Analyze the following source content and extract key points, entities, and relationships. Provide structured output with clear categorization.</pre></div>
+    <div class="prompt-card"><div class="head"><b style="font-size:13px">Point Expansion</b><span class="badge gray">观点展开</span><span style="font-size:11px;color:var(--text2)">v2</span><div style="margin-left:auto;display:flex;gap:6px"><span class="badge green" style="cursor:pointer">已启用</span><button class="btn outline" style="padding:2px 8px;font-size:11px">编辑</button><a href="#" style="font-size:11px;color:var(--red)">删除</a></div></div><pre>Given this node context, generate deeper sub-questions and related perspectives. Output as a structured list of reasoning directions.</pre></div>
+    <div class="prompt-card"><div class="head"><b style="font-size:13px">Inspiration Generator</b><span class="badge gray">灵感启发</span><span style="font-size:11px;color:var(--text2)">v1</span><div style="margin-left:auto;display:flex;gap:6px"><span class="badge green" style="cursor:pointer">已启用</span><button class="btn outline" style="padding:2px 8px;font-size:11px">编辑</button><a href="#" style="font-size:11px;color:var(--red)">删除</a></div></div><pre>Based on the current canvas context, generate an inspiring question direction. Output: question_direction, why_it_matters, prerequisites.</pre></div>
+  </div>
+</div>
+
+<!-- BILLING -->
+<div class="page" id="p-billing">
+  <h1>会员计费</h1><p class="sub">管理套餐和配额限制</p>
+  <div class="strip"><b>Stripe 集成（待办）</b><ul><li>通过环境变量 STRIPE_SECRET_KEY 连接 Stripe 账号</li><li>Webhook：checkout.session.completed、subscription.updated、invoice.payment_failed</li><li>通过 stripePriceId 关联套餐与 Stripe 价格</li><li>客户门户：升级 / 降级 / 取消</li></ul></div>
+  <div class="section"><div class="card"><h3>套餐列表</h3>
+    <table><thead><tr><th>名称</th><th>价格</th><th>画布数</th><th>节点数</th><th>AI/天</th><th>Stripe</th><th></th></tr></thead><tbody>
+      <tr><td><b>免费版</b></td><td>¥0.00</td><td>3</td><td>50</td><td>10</td><td style="color:var(--text2)">—</td><td><a href="#" style="font-size:12px;color:var(--primary)">编辑</a></td></tr>
+      <tr><td><b>专业版</b></td><td>¥9.99</td><td>∞</td><td>∞</td><td>200</td><td style="font-family:monospace;font-size:11px">price_pro_123</td><td><a href="#" style="font-size:12px;color:var(--primary)">编辑</a></td></tr>
+      <tr><td><b>团队版</b></td><td>¥29.99</td><td>∞</td><td>∞</td><td>∞</td><td style="font-family:monospace;font-size:11px">price_team_456</td><td><a href="#" style="font-size:12px;color:var(--primary)">编辑</a></td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- RISK -->
+<div class="page" id="p-risk">
+  <h1>风控中心</h1><p class="sub">监控异常行为信号，管理风控事件</p>
+  <div style="display:grid;gap:12px;grid-template-columns:repeat(4,1fr);margin-top:16px">
+    <div class="card"><span class="badge red" style="margin-bottom:8px;display:inline-block">高</span><div class="value" style="font-size:28px">3</div><div style="font-size:11px;color:var(--text2)">burst（高频请求）</div></div>
+    <div class="card"><span class="badge amber" style="margin-bottom:8px;display:inline-block">中</span><div class="value" style="font-size:28px">1</div><div style="font-size:11px;color:var(--text2)">failure_rate（失败率异常）</div></div>
+    <div class="card"><span class="badge" style="background:#fef3c7;color:#92400e;margin-bottom:8px;display:inline-block">低</span><div class="value" style="font-size:28px">2</div><div style="font-size:11px;color:var(--text2)">daily_abuse（日用量超标）</div></div>
+    <div class="card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px">无更多告警</div>
+  </div>
+  <div class="section"><h3 style="font-size:14px;margin-bottom:8px">风控事件</h3><div class="card">
+    <table><thead><tr><th>类型</th><th>详情</th><th>状态</th><th>时间</th><th></th></tr></thead><tbody>
+      <tr><td><b>burst</b></td><td style="font-size:12px;color:var(--text2)">18 requests in 5 min from frank@example.com</td><td><span class="badge amber">待处理</span></td><td style="font-size:11px;color:var(--text2)">5/26 10:05</td><td><a href="#" style="font-size:11px;color:var(--primary)">标记已处理</a></td></tr>
+      <tr><td><b>failure_rate</b></td><td style="font-size:12px;color:var(--text2)">60% failure rate in last hour for alice@example.com</td><td><span class="badge amber">待处理</span></td><td style="font-size:11px;color:var(--text2)">5/26 09:40</td><td><a href="#" style="font-size:11px;color:var(--primary)">标记已处理</a></td></tr>
+      <tr><td><b>daily_abuse</b></td><td style="font-size:12px;color:var(--text2)">52 AI calls (free limit: 50) by bob@example.com</td><td><span class="badge green">已处理</span></td><td style="font-size:11px;color:var(--text2)">5/25 18:00</td><td></td></tr>
+      <tr><td><b>burst</b></td><td style="font-size:12px;color:var(--text2)">12 requests in 2 min from dave@example.com</td><td><span class="badge green">已处理</span></td><td style="font-size:11px;color:var(--text2)">5/24 14:30</td><td></td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="p-settings">
+  <h1>系统设置</h1><p class="sub">系统配置和管理员管理</p>
+  <div class="cards c3" style="margin-top:16px">
+    <div class="card"><div class="label">版本</div><div class="value" style="font-size:18px">0.1.0</div></div>
+    <div class="card"><div class="label">数据库</div><div class="value" style="font-size:18px;display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green)"></span>已连接</div></div>
+    <div class="card"><div class="label">运行时间</div><div class="value" style="font-size:18px">3天 14小时</div></div>
+  </div>
+  <div class="section"><div class="card"><h3>管理员邮箱</h3><div style="margin-top:8px;display:flex;gap:8px"><input placeholder="添加管理员邮箱..."><button class="btn primary">添加</button></div>
+    <div style="margin-top:8px"><div style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;display:flex;justify-content:space-between;font-size:13px"><span>admin@example.com</span><button class="btn outline" style="padding:2px 8px;font-size:11px">移除</button></div></div>
+  </div></div>
+  <div class="section"><div class="card"><h3>会员配额</h3><p style="font-size:12px;color:var(--text2);margin-bottom:12px">-1 表示无限制</p>
+    <div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px"><b style="font-size:13px">免费版</b><div style="display:grid;gap:8px;grid-template-columns:repeat(3,1fr);margin-top:8px"><div><label style="font-size:11px;color:var(--text2)">最大画布数</label><input type="number" value="3"></div><div><label style="font-size:11px;color:var(--text2)">最大节点数</label><input type="number" value="50"></div><div><label style="font-size:11px;color:var(--text2)">AI 调用 / 天</label><input type="number" value="10"></div></div></div>
+    <div style="border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px"><b style="font-size:13px">专业版</b><div style="display:grid;gap:8px;grid-template-columns:repeat(3,1fr);margin-top:8px"><div><label style="font-size:11px;color:var(--text2)">最大画布数</label><input type="number" value="-1"></div><div><label style="font-size:11px;color:var(--text2)">最大节点数</label><input type="number" value="-1"></div><div><label style="font-size:11px;color:var(--text2)">AI 调用 / 天</label><input type="number" value="200"></div></div></div>
+    <div style="border:1px solid var(--border);border-radius:6px;padding:12px"><b style="font-size:13px">团队版</b><div style="display:grid;gap:8px;grid-template-columns:repeat(3,1fr);margin-top:8px"><div><label style="font-size:11px;color:var(--text2)">最大画布数</label><input type="number" value="-1"></div><div><label style="font-size:11px;color:var(--text2)">最大节点数</label><input type="number" value="-1"></div><div><label style="font-size:11px;color:var(--text2)">AI 调用 / 天</label><input type="number" value="0"></div></div></div>
+    <button class="btn primary" style="margin-top:12px">保存配额</button>
+  </div></div>
+</div>
+</main>
+
+<script>
+const links=document.querySelectorAll('#nav a');
+function nav(p){links.forEach(l=>l.classList.toggle('active',l.dataset.page===p));document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='p-'+p))}
+links.forEach(l=>l.addEventListener('click',()=>nav(l.dataset.page)));
+function bars(id,n,min,max,alt){const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let i=0;i<n;i++){const h=Math.floor(Math.random()*(max-min)+min),b=document.createElement('div');b.className='bar'+(alt&&i%2?' alt':'');b.style.height=h+'%';el.appendChild(b)}}
+bars('trend-chart',30,20,90,true);bars('ai-trend-chart',30,15,85,false);
+</script>
+</body>
+</html>

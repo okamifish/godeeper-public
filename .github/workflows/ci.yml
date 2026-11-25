@@ -43,10 +43,6 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-    env:
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,3 +54,7 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run test:run
       - run: npx next build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder

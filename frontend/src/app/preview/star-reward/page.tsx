@@ -91,7 +91,7 @@ const pageCss = `
     font-family: var(--font-mono), monospace;
     font-size: 11px;
     letter-spacing: .08em;
-    color: #8a8a8a;
+    color: #5f5f5f; /* 11px 文本需 >= 4.5:1，原 #8a8a8a 仅 3.4:1 */
   }
   .srp-stage {
     display: grid;

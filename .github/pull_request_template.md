@@ -12,7 +12,7 @@
 
 ```bash
 # 例如
-cd backend && npm test
+cd backend && npx vitest run tests/unit tests/contract --exclude "**/prompt-resolver.test.ts"
 cd frontend && npm run test:run
 ```
 

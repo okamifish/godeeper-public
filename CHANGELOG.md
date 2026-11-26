@@ -2,6 +2,17 @@
 
 本项目遵循[语义化版本](https://semver.org/lang/zh-CN/)。本文件只记录用户能感知的变化，内部重构不写入。
 
+## [Unreleased]
+
+### 改进
+
+- Windows 一键启动脚本增加 Node、环境变量、数据库和端口检查，支持 `-Setup` / `-Migrate` / `-Seed`，启动后等待前后端健康检查
+- 前端改用系统字体，移除 Google Fonts 运行时依赖，离线或受限网络也能启动
+
+### 修复
+
+- 本地开发时 `next/font/google` 无法解析 Turbopack 字体模块导致首页 500
+
 ## [0.2.0] - 2026-11-21
 
 ### 新增

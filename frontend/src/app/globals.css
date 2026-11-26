@@ -39,6 +39,9 @@
 }
 
 :root {
+  --font-body: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --font-display: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
   --surface: #fdf8f8;
   --surface-dim: #ddd9d8;
   --surface-bright: #fdf8f8;

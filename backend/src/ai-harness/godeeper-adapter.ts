@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
+import { assertSafeBaseUrl } from "../lib/base-url";
 import {
   INVALID_CREDENTIAL_CODE,
   LlmAdapter,
@@ -31,6 +32,8 @@ export function withAiCredential<T>(credential: AiCredential, fn: () => Promise<
 }
 
 function createModel(credential: AiCredential, modelName: string) {
+  // 请求发出前的最后一道校验，防止绕过 /auth/api-key 直接注入内网地址
+  assertSafeBaseUrl(credential.baseUrl);
   const baseURL = credential.baseUrl
     ?? (credential.provider === "openrouter"
       ? "https://openrouter.ai/api/v1"

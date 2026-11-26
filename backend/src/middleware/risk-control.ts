@@ -52,9 +52,11 @@ export async function checkFailureRate(userId: string): Promise<{ allowed: boole
     FROM task_runs
     WHERE user_id = ${userId} AND created_at >= now() - interval '1 hour'
   `);
-  const row = (stats as unknown as Record<string, unknown>[])[0];
-  const total = Number(row?.total ?? 0);
-  const failed = Number(row?.failed ?? 0);
+  // postgres-js 的 db.execute() 直接返回行对象数组；解构出的 stats 已经是第一行，
+  // 字段名沿用 SQL 别名（total / failed），不要再次按 [0] 索引。
+  const row = stats as unknown as Record<string, unknown>;
+  const total = Number(row.total ?? 0);
+  const failed = Number(row.failed ?? 0);
 
   if (total >= config.failureMinSamples && failed / total >= config.failureRateThreshold) {
     await recordRiskEvent(

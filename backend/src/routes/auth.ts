@@ -7,6 +7,7 @@ import * as authService from "../services/auth.service";
 import { authMiddleware } from "../middleware/auth";
 import { getPlanSnapshot } from "../middleware/membership";
 import { capabilitiesFor } from "../lib/capabilities";
+import { isSafeBaseUrl } from "../lib/base-url";
 
 const auth = new Hono<{ Variables: Variables }>();
 
@@ -24,7 +25,7 @@ const loginSchema = z.object({
 const apiKeySchema = z.object({
   apiKey: z.string().min(1),
   provider: z.enum(["openrouter", "openai", "anthropic", "siliconflow", "custom"]).default("openrouter"),
-  baseUrl: z.string().optional(),
+  baseUrl: z.string().refine((value) => isSafeBaseUrl(value), { message: "Invalid baseUrl" }).optional(),
   modelName: z.string().min(1).max(120).optional(),
 });
 

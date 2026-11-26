@@ -4,6 +4,7 @@ import { getDecryptedApiKey } from "./auth.service";
 import { generateAiText, streamAiText } from "../ai-harness/runtime";
 import type { AiCredential } from "../ai-harness/godeeper-adapter";
 import { safeFetchText } from "../lib/safe-fetch";
+import { assertSafeBaseUrl } from "../lib/base-url";
 import { resolveDefaultModel } from "../lib/model-defaults";
 import {
   PROMPT_CATALOG_BY_ID,
@@ -21,6 +22,8 @@ import {
 } from "../prompts/resolver";
 
 function createModel(apiKey: string, provider: string, modelName: string, customBaseUrl?: string | null) {
+  // 即使绕过了保存接口（数据库被直接写入），真正发请求前仍要校验一次
+  assertSafeBaseUrl(customBaseUrl);
   const baseURL = customBaseUrl
     ?? (provider === "openrouter"
       ? "https://openrouter.ai/api/v1"
@@ -69,6 +72,7 @@ function getHostedCredential(): { credential: AiCredential; modelName: string } 
   if (!apiKey) return null;
   const provider = process.env.HOSTED_AI_PROVIDER ?? "openai";
   const baseUrl = process.env.HOSTED_AI_BASE_URL ?? undefined;
+  assertSafeBaseUrl(baseUrl);
   return {
     credential: { apiKey, provider, baseUrl },
     modelName: process.env.HOSTED_AI_MODEL || resolveDefaultModel(provider, baseUrl),
@@ -78,6 +82,7 @@ function getHostedCredential(): { credential: AiCredential; modelName: string } 
 async function getCredential(userId: string): Promise<{ credential: AiCredential; modelName: string }> {
   const keyInfo = await getDecryptedApiKey(userId);
   if (keyInfo) {
+    assertSafeBaseUrl(keyInfo.baseUrl);
     return {
       credential: { apiKey: keyInfo.apiKey, provider: keyInfo.provider, baseUrl: keyInfo.baseUrl },
       modelName: keyInfo.modelName || resolveDefaultModel(keyInfo.provider, keyInfo.baseUrl),

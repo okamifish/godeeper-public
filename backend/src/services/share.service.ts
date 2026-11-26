@@ -9,7 +9,11 @@ export async function createShare(
   allowComment = false,
 ) {
   const canvas = await db.select().from(canvases)
-    .where(and(eq(canvases.id, canvasId), eq(canvases.userId, userId)))
+    .where(and(
+      eq(canvases.id, canvasId),
+      eq(canvases.userId, userId),
+      isNull(canvases.deletedAt),
+    ))
     .limit(1);
   if (!canvas[0]) throw new Error("Canvas not found");
 
@@ -78,6 +82,7 @@ export async function getShareByToken(token: string) {
     .where(and(
       eq(canvasShares.shareToken, token),
       isNull(canvasShares.revokedAt),
+      isNull(canvases.deletedAt),
       or(isNull(canvasShares.expiresAt), gt(canvasShares.expiresAt, new Date()))
     ))
     .limit(1);
@@ -92,9 +97,11 @@ export async function resolveShareToken(token: string) {
     allowComment: canvasShares.allowComment,
     expiresAt: canvasShares.expiresAt,
   }).from(canvasShares)
+    .innerJoin(canvases, eq(canvasShares.canvasId, canvases.id))
     .where(and(
       eq(canvasShares.shareToken, token),
       isNull(canvasShares.revokedAt),
+      isNull(canvases.deletedAt),
       or(isNull(canvasShares.expiresAt), gt(canvasShares.expiresAt, new Date()))
     ))
     .limit(1);

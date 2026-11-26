@@ -45,6 +45,7 @@ function isPrivateIpv4(ip: string): boolean {
   if (a === 172 && b >= 16 && b <= 31) return true;    // 172.16.0.0/12
   if (a === 192 && b === 168) return true;             // 192.168.0.0/16
   if (a === 169 && b === 254) return true;             // 169.254.0.0/16（含云元数据）
+  if (a === 100 && b >= 64 && b <= 127) return true;   // 100.64.0.0/10 CGNAT（含 100.100.100.200）
   return false;
 }
 

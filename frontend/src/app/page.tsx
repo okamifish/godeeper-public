@@ -28,7 +28,7 @@ import { GroupFrameNode } from "@/components/canvas/group-frame-node";
 import { buildGroupFrames } from "@/lib/canvas-groups";
 import { Icons } from "@/components/icons";
 import { useCanvasStore } from "@/lib/canvas-store";
-import { toCanvasEdgeSeed, toCanvasNodeSeed } from "@/lib/canvas-store";
+import { toCanvasStateSnapshot } from "@/lib/canvas-store";
 import { isAuthenticated, getUser } from "@/lib/auth";
 import { hasCapability } from "@/lib/capabilities";
 import { BASE_NODE_WIDTH, WIDTH_BY_KIND } from "@/data/node-defaults";
@@ -266,13 +266,8 @@ function WorkspacePage() {
         }
       }
 
-      const currentSeed: import("@/lib/types").CanvasState = {
-        selectedNodeId: s.selectedNodeId ?? "",
-        nodes: s.nodes.map(toCanvasNodeSeed),
-        edges: s.edges.map(toCanvasEdgeSeed),
-        timeline: s.timeline,
-        canvasName: useCanvasStore.getState().canvasName,
-      };
+      // 复用 store 的完整快照，避免遗漏 groups / concepts / guideMode 等字段。
+      const currentSeed = toCanvasStateSnapshot(useCanvasStore.getState());
       useCanvasStore.setState({
         canvases: { ...s.canvases, [canvasId]: currentSeed },
         // 未登录时 saveCurrentCanvas 会直接跳过，不能显示成「已保存」

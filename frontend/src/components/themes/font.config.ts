@@ -1,108 +1,22 @@
-import {
-  Architects_Daughter,
-  DM_Sans,
-  Fira_Code,
-  Geist,
-  Geist_Mono,
-  Instrument_Sans,
-  Inter,
-  JetBrains_Mono,
-  Merriweather,
-  Mulish,
-  Playfair_Display,
-  Noto_Sans_Mono,
-  Outfit,
-  Space_Mono
-} from 'next/font/google';
+/**
+ * 主题字体兼容层。
+ *
+ * 历史实现从 next/font/google 顶层导入了 14 个 Google 字体，构建期会逐个
+ * 请求 fonts.googleapis.com；在离线或受限网络环境下会拖慢甚至阻断构建。
+ * 且经核查，这些字体变量除 --font-sans 外均未在项目样式表中实际使用，
+ * 整个模块也没有被任何页面引用，属于模板残留。
+ *
+ * 现在字体统一由 globals.css 中 :root 的系统字体栈提供
+ * （--font-body / --font-display / --font-mono），不产生任何网络请求或
+ * 构建期副作用。保留 fontVariables 导出（字符串类型）以防后续代码引用。
+ *
+ * 依据：modern-web-guidance performance.md（消除第三方字体请求、保证构建可复现）。
+ */
+export const fontVariables = '';
 
-import { cn } from '@/lib/utils';
-
-const fontSans = Geist({
-  subsets: ['latin'],
-  variable: '--font-sans'
-});
-
-const fontMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono'
-});
-
-const fontInstrument = Instrument_Sans({
-  subsets: ['latin'],
-  variable: '--font-instrument'
-});
-
-const fontNotoMono = Noto_Sans_Mono({
-  subsets: ['latin'],
-  variable: '--font-noto-mono'
-});
-
-const fontMullish = Mulish({
-  subsets: ['latin'],
-  variable: '--font-mullish'
-});
-
-const fontInter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter'
-});
-
-const fontArchitectsDaughter = Architects_Daughter({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-architects-daughter'
-});
-
-const fontDMSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dm-sans'
-});
-
-const fontFiraCode = Fira_Code({
-  subsets: ['latin'],
-  variable: '--font-fira-code'
-});
-
-const fontOutfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit'
-});
-
-const fontSpaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-space-mono'
-});
-
-const fontJetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono'
-});
-
-const fontMerriweather = Merriweather({
-  subsets: ['latin'],
-  weight: ['300', '400', '700'],
-  variable: '--font-merriweather'
-});
-
-const fontPlayfairDisplay = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair-display'
-});
-
-export const fontVariables = cn(
-  fontSans.variable,
-  fontMono.variable,
-  fontInstrument.variable,
-  fontNotoMono.variable,
-  fontMullish.variable,
-  fontInter.variable,
-  fontArchitectsDaughter.variable,
-  fontDMSans.variable,
-  fontFiraCode.variable,
-  fontOutfit.variable,
-  fontSpaceMono.variable,
-  fontJetBrainsMono.variable,
-  fontMerriweather.variable,
-  fontPlayfairDisplay.variable
-);
+/** 主题字体回退栈，供需要的组件显式引用。 */
+export const themeFontFallbacks = {
+  sans: 'var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  mono: 'var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace',
+  serif: 'Georgia, "Times New Roman", serif',
+} as const;

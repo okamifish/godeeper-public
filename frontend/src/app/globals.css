@@ -3660,8 +3660,8 @@ input:focus-visible {
 }
 
 @theme inline {
-  /* 原为 --font-sans: var(--font-sans) 自引用（无效）。指向 layout.tsx
-     自托管字体变量，保证 Tailwind 主题字体能正确解析。 */
+  /* 原为 --font-sans: var(--font-sans) 自引用（无效）。改为指向 :root 的
+     字体变量，保证 Tailwind 主题字体能正确解析。 */
   --font-heading: var(--font-display);
   --font-sans: var(--font-body);
   --color-sidebar-ring: var(--sidebar-ring);

@@ -66,7 +66,7 @@ function PublicCanvasInner({ id }: { id: string }) {
   if (error) {
     return (
       <PublicShell title="画布不可用">
-        <div style={cardStyle}>
+        <div style={cardStyle} role="alert">
           <h1 style={{ margin: 0, fontSize: 22 }}>这张画布没有公开</h1>
           <p style={{ color: "#6b7280", marginTop: 8 }}>
             可能已被取消发布，或链接不正确。
@@ -165,7 +165,7 @@ function PublicCanvasInner({ id }: { id: string }) {
                     fontSize: 13,
                   }}
                 />
-                {commentError ? <span style={{ color: "#ba1a1a", fontSize: 12 }}>{commentError}</span> : null}
+                {commentError ? <span role="alert" style={{ color: "#ba1a1a", fontSize: 12 }}>{commentError}</span> : null}
                 <button
                   className="primary-button"
                   onClick={() => void submitComment()}

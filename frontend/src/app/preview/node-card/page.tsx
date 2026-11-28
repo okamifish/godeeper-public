@@ -219,7 +219,8 @@ const pageCss = `
 
 export default function NodeCardPreviewPage() {
   return (
-    <main className="ncp-page">
+    // layout.tsx 已提供全站唯一的 main landmark，这里改用 section 避免嵌套
+    <section className="ncp-page">
       <style>{pageCss}</style>
 
       <header className="ncp-head">
@@ -252,6 +253,6 @@ export default function NodeCardPreviewPage() {
         <code> lucide-react</code>：文本 PenLine / 任务 Sparkles / 链接 Link2 / 结果 FileText /
         自由 StickyNote / 启发 Lightbulb。hover 抬升 4px，选中态用强调色描边并给图标加一圈光环。
       </p>
-    </main>
+    </section>
   );
 }

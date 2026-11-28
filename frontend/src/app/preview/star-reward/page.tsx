@@ -91,7 +91,7 @@ const pageCss = `
     font-family: var(--font-mono), monospace;
     font-size: 11px;
     letter-spacing: .08em;
-    color: #8a8a8a;
+    color: #5f5f5f; /* 11px 文本需 >= 4.5:1，原 #8a8a8a 仅 3.4:1 */
   }
   .srp-stage {
     display: grid;
@@ -335,7 +335,8 @@ export default function StarRewardPreviewPage() {
   }, [auto, slow]);
 
   return (
-    <main className={`srp-page${slow ? " srp-slow" : ""}`}>
+    // layout.tsx 已提供全站唯一的 main landmark，这里改用 section 避免嵌套
+    <section className={`srp-page${slow ? " srp-slow" : ""}`}>
       <style>{pageCss}</style>
 
       <header className="srp-head">
@@ -392,6 +393,6 @@ export default function StarRewardPreviewPage() {
         <code>.star-reward</code> 弹跳 + 闪烁。历史版本的光环与小星星只在预览页内复刻，
         不进入正式组件。
       </p>
-    </main>
+    </section>
   );
 }

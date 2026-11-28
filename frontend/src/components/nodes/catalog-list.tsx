@@ -151,7 +151,9 @@ export function CatalogList({ nodeId, catalog, label }: CatalogListProps) {
   return (
     <div className={isDirections ? "catalog-list catalog-list--directions" : "result-catalog"}>
       <div className="result-catalog-head">
-        <span className="node-chip">{label}</span>
+        {/* 目录区的语义标题：h2 -> h3（条目）避免 h4 前缺层级。
+            依据：accessibility.md §1 Headings（不要跳级 / 不用假标题）。 */}
+        <h2 className="node-chip">{label}</h2>
         <span className="result-catalog-count">
           {items.length} {isDirections ? t("guideDirections") : t("resultCatalogAnswers")}
         </span>
@@ -262,7 +264,7 @@ export function CatalogList({ nodeId, catalog, label }: CatalogListProps) {
                   <>
                     <div className="result-catalog-item-head">
                       <span className="result-catalog-index">{index + 1}</span>
-                      <h4>{item.title}</h4>
+                      <h3>{item.title}</h3>
                       {isDirections && item.role ? (
                         <span className="guide-role-tag">{roleLabel(item.role)}</span>
                       ) : null}

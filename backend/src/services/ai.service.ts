@@ -4,6 +4,7 @@ import { getDecryptedApiKey } from "./auth.service";
 import { generateAiText, streamAiText } from "../ai-harness/runtime";
 import type { AiCredential } from "../ai-harness/godeeper-adapter";
 import { safeFetchText } from "../lib/safe-fetch";
+import { assertSafeBaseUrl } from "../lib/base-url";
 import { resolveDefaultModel } from "../lib/model-defaults";
 import {
   PROMPT_CATALOG_BY_ID,
@@ -20,7 +21,10 @@ import {
   type PromptSource,
 } from "../prompts/resolver";
 
-function createModel(apiKey: string, provider: string, modelName: string, customBaseUrl?: string | null) {
+async function createModel(apiKey: string, provider: string, modelName: string, customBaseUrl?: string | null) {
+  // 即使绕过了保存接口（数据库被直接写入），真正发请求前仍要校验一次，
+  // 并把域名解析成 IP 检查，AI SDK 使用全局 fetch 不经过 safeFetchText。
+  await assertSafeBaseUrl(customBaseUrl);
   const baseURL = customBaseUrl
     ?? (provider === "openrouter"
       ? "https://openrouter.ai/api/v1"
@@ -64,11 +68,12 @@ export class AiNotConfiguredError extends Error {
   }
 }
 
-function getHostedCredential(): { credential: AiCredential; modelName: string } | null {
+async function getHostedCredential(): Promise<{ credential: AiCredential; modelName: string } | null> {
   const apiKey = process.env.HOSTED_AI_API_KEY;
   if (!apiKey) return null;
   const provider = process.env.HOSTED_AI_PROVIDER ?? "openai";
   const baseUrl = process.env.HOSTED_AI_BASE_URL ?? undefined;
+  await assertSafeBaseUrl(baseUrl);
   return {
     credential: { apiKey, provider, baseUrl },
     modelName: process.env.HOSTED_AI_MODEL || resolveDefaultModel(provider, baseUrl),
@@ -78,6 +83,7 @@ function getHostedCredential(): { credential: AiCredential; modelName: string } 
 async function getCredential(userId: string): Promise<{ credential: AiCredential; modelName: string }> {
   const keyInfo = await getDecryptedApiKey(userId);
   if (keyInfo) {
+    await assertSafeBaseUrl(keyInfo.baseUrl);
     return {
       credential: { apiKey: keyInfo.apiKey, provider: keyInfo.provider, baseUrl: keyInfo.baseUrl },
       modelName: keyInfo.modelName || resolveDefaultModel(keyInfo.provider, keyInfo.baseUrl),
@@ -85,7 +91,7 @@ async function getCredential(userId: string): Promise<{ credential: AiCredential
   }
 
   // 托管 AI：用户没有自己的 Key 时，走服务端托管的 provider；调用会扣 credits。
-  const hosted = getHostedCredential();
+  const hosted = await getHostedCredential();
   if (hosted) return hosted;
 
   throw new AiNotConfiguredError();
@@ -297,7 +303,7 @@ export async function analyzePdfSource(
 ) {
   const keyInfo = await getDecryptedApiKey(userId);
   if (!keyInfo) throw new AiNotConfiguredError();
-  const model = createModel(keyInfo.apiKey, keyInfo.provider, modelName || keyInfo.modelName || resolveDefaultModel(keyInfo.provider, keyInfo.baseUrl), keyInfo.baseUrl);
+  const model = await createModel(keyInfo.apiKey, keyInfo.provider, modelName || keyInfo.modelName || resolveDefaultModel(keyInfo.provider, keyInfo.baseUrl), keyInfo.baseUrl);
   const systemPrompt = await getPrompt("source");
 
   const { text, usage } = await generateText({

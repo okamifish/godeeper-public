@@ -7,6 +7,7 @@ import * as authService from "../services/auth.service";
 import { authMiddleware } from "../middleware/auth";
 import { getPlanSnapshot } from "../middleware/membership";
 import { capabilitiesFor } from "../lib/capabilities";
+import { assertSafeBaseUrl, isSafeBaseUrl } from "../lib/base-url";
 
 const auth = new Hono<{ Variables: Variables }>();
 
@@ -24,7 +25,7 @@ const loginSchema = z.object({
 const apiKeySchema = z.object({
   apiKey: z.string().min(1),
   provider: z.enum(["openrouter", "openai", "anthropic", "siliconflow", "custom"]).default("openrouter"),
-  baseUrl: z.string().optional(),
+  baseUrl: z.string().refine((value) => isSafeBaseUrl(value), { message: "Invalid baseUrl" }).optional(),
   modelName: z.string().min(1).max(120).optional(),
 });
 
@@ -78,6 +79,8 @@ auth.get("/me/plan", authMiddleware, async (c) => {
 auth.put("/api-key", authMiddleware, zValidator("json", apiKeySchema), async (c) => {
   const user = c.get("user");
   const { apiKey, provider, baseUrl, modelName } = c.req.valid("json");
+  // zod 只能做同步检查；保存前再解析一次域名，拒绝指向内网的自定义地址
+  await assertSafeBaseUrl(baseUrl);
   await authService.updateApiKey(user.id, apiKey, provider, baseUrl, modelName);
   return c.json({ ok: true });
 });

@@ -74,7 +74,7 @@ export async function runLLMTask(
   taskType?: string,
   guide?: { mode?: boolean; child?: boolean },
 ): Promise<LLMTaskResponse> {
-  const res = await api.runTask("inline", prompt, context, _modelName, taskType, guide);
+  const res = await api.runTask("inline", prompt, context, _modelName, taskType, guide, _signal);
   return {
     results: res.results ?? [],
     title: res.title,

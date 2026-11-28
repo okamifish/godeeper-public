@@ -116,7 +116,7 @@ function SharedCanvasInner({ token }: { token: string }) {
       <ShareShell title="链接不可用">
         <div style={cardStyle}>
           <h1 style={{ margin: 0, fontSize: 22 }}>这条分享链接已失效</h1>
-          <p style={{ color: "#6b7280", marginTop: 8 }}>{error}</p>
+          <p role="alert" style={{ color: "#6b7280", marginTop: 8 }}>{error}</p>
           <Link href="/" className="primary-button" style={{ textDecoration: "none", display: "inline-block" }}>
             打开我的画布
           </Link>
@@ -196,7 +196,7 @@ function SharedCanvasInner({ token }: { token: string }) {
                   fontSize: 13,
                 }}
               />
-              {commentError ? <span style={{ color: "#ba1a1a", fontSize: 12 }}>{commentError}</span> : null}
+              {commentError ? <span role="alert" style={{ color: "#ba1a1a", fontSize: 12 }}>{commentError}</span> : null}
               <button className="primary-button" onClick={() => void submitComment()} disabled={posting || !draft.trim()}>
                 {posting ? "发送中…" : "发送留言"}
               </button>

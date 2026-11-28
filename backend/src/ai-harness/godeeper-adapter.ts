@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
+import { assertSafeBaseUrl } from "../lib/base-url";
 import {
   INVALID_CREDENTIAL_CODE,
   LlmAdapter,
@@ -30,7 +31,10 @@ export function withAiCredential<T>(credential: AiCredential, fn: () => Promise<
   return credentialStore.run(credential, fn) as Promise<T>;
 }
 
-function createModel(credential: AiCredential, modelName: string) {
+async function createModel(credential: AiCredential, modelName: string) {
+  // 请求发出前的最后一道校验，防止绕过 /auth/api-key 直接注入内网地址。
+  // AI SDK 使用全局 fetch，所以这里必须同步解析域名再检查。
+  await assertSafeBaseUrl(credential.baseUrl);
   const baseURL = credential.baseUrl
     ?? (credential.provider === "openrouter"
       ? "https://openrouter.ai/api/v1"
@@ -96,7 +100,7 @@ export class GoDeeperAdapter extends LlmAdapter {
     }
 
     const result = streamText({
-      model: createModel(credential, options.model),
+      model: await createModel(credential, options.model),
       prompt: toPrompt(options.messages),
       ...(options.system === undefined ? {} : { system: options.system }),
       ...(options.temperature === undefined ? {} : { temperature: options.temperature }),

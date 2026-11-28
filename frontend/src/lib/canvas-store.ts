@@ -95,6 +95,14 @@ import type {
 import { clampNotePageIndex, normalizeNotePages, notePagesToBody } from "@/lib/note-pages";
 import { buildQualityHash } from "@/lib/question-quality";
 
+// 任务结果节点必须使用全局唯一 id：runCount 可被画布切换重置，且并发运行时会重复取值。
+function uniqueResultId(prefix: string): string {
+  const suffix = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${suffix}`;
+}
+
 export function getNodeWidth(node: CanvasNodeSeed) {
   return node.width ?? (WIDTH_BY_KIND[node.kind] ?? BASE_NODE_WIDTH);
 }
@@ -2454,8 +2462,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
         child: isGuideChild,
       })
         .then((payload) => {
+          // 用户已点「停止」：请求可能已发出，但结果绝不能再写回画布。
+          if (controller.signal.aborted) return;
           const { results, title, mode, summary, items, backfill } = payload;
-          const runCount = get().runCount;
           const taskWidth = taskNode?.data.width ?? BASE_NODE_WIDTH;
           const baseX = taskNode.position.x + taskWidth + 60;
           const baseY = taskNode.position.y;
@@ -2512,7 +2521,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
           let lastResultId = "";
           if (results.length >= 2) {
             // 多条答案收进一张目录卡，避免在画布右侧铺开一大片
-            const catalogId = `${taskNodeId}-catalog-${runCount}`;
+            const catalogId = uniqueResultId(`${taskNodeId}-catalog`);
             const items: CatalogItem[] = results.map((result, index) => ({
               id: `${catalogId}-item-${index}`,
               title: result.title,
@@ -2556,7 +2565,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
             // 单条结果仍用普通卡片，避免为了统一而统一
             const columns = 1;
             results.forEach((result, index) => {
-              const resultId = `${taskNodeId}-llm-${runCount}-${index}`;
+              const resultId = uniqueResultId(`${taskNodeId}-llm`);
               const col = index % columns;
               const row = Math.floor(index / columns);
               const resultX = baseX + col * (BASE_NODE_WIDTH + 48);
@@ -2610,7 +2619,14 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
           if (lastResultId) get().focusNode(lastResultId);
         })
         .catch((err) => {
-          if (err instanceof DOMException && err.name === "AbortError") return;
+          if ((err instanceof DOMException && err.name === "AbortError") || controller.signal.aborted) {
+            set((state) => {
+              const updated = new Map(state.abortControllers);
+              updated.delete(taskNodeId);
+              return { abortControllers: updated };
+            });
+            return;
+          }
           const message = aiErrorMessage(
             err instanceof Error ? err.message : "Failed",
             language,
@@ -2630,7 +2646,6 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
     }
 
     // Fallback: mock behavior
-    const runCount = get().runCount;
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     const taskWidth = taskNode?.data.width ?? BASE_NODE_WIDTH;
@@ -2641,7 +2656,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
       const timer = setTimeout(() => {
         const desiredY = mockBaseY + index * POSITION_OFFSETS.runResult.yStep;
         const y = findNonOverlappingY(get().nodes, mockBaseX, desiredY, BASE_NODE_WIDTH, NODE_HEIGHT_BY_KIND.result);
-        const nodeId = `${taskNodeId}-generated-${runCount}-${index}`;
+        const nodeId = uniqueResultId(`${taskNodeId}-generated`);
         const resultNode = buildNode({
           id: nodeId,
           kind: "result",
@@ -3620,9 +3635,12 @@ export const useCanvasStore = create<CanvasStore>((set, get) => {
   getReasoningPath: (nodeId: string) => {
     const { nodes, edges } = get();
     const path: GoDeeperFlowNode[] = [];
+    const visited = new Set<string>();
     let currentId: string | undefined = nodeId;
 
-    while (currentId) {
+    // onConnect 目前允许成环；有 visited 保护后追问不会再让主循环无限执行。
+    while (currentId && !visited.has(currentId)) {
+      visited.add(currentId);
       const node = nodes.find((n) => n.id === currentId);
       if (!node) break;
       path.unshift(node);

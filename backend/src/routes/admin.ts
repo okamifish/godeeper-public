@@ -414,7 +414,8 @@ admin.get("/ai-usage/quota-hit", async (c) => {
     AND (SELECT count(*) FROM ai_usage au WHERE au.user_id = u.id AND au.date = ${today}) >= ${dailyLimit}
   `);
 
-  const hitCount = Number((hitTotal as unknown as Record<string, unknown>[])[0]?.count ?? 0);
+  // db.execute() 返回的每行就是记录对象，解构出的 hitTotal 已是第一行
+  const hitCount = Number((hitTotal as unknown as Record<string, unknown>).count ?? 0);
   const freeCount = freeTotal.count;
 
   return c.json({
@@ -808,7 +809,7 @@ admin.get("/stats/enhanced", async (c) => {
       (SELECT count(*) * 2 FROM node_links WHERE is_auto = false), 0
     ) AS score
   `);
-  const depthScore = Number((depth as unknown as Record<string, unknown>[])[0]?.score ?? 0);
+  const depthScore = Number((depth as unknown as Record<string, unknown>).score ?? 0);
 
   // Today AI cost
   const [costRow] = await db.select({ total: sql<string>`coalesce(sum(${aiUsage.costUsd}),'0')` })
@@ -835,7 +836,7 @@ admin.get("/stats/enhanced", async (c) => {
     dau: dau.count,
     depthScore,
     todayCostUsd,
-    heavyUsers: Number((heavyCount as unknown as Record<string, unknown>[])[0]?.cnt ?? 0),
+    heavyUsers: Number((heavyCount as unknown as Record<string, unknown>).cnt ?? 0),
     failedTasks: failCount.count,
     riskAlerts: alertCount.count,
   });

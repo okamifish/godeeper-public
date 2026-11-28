@@ -434,9 +434,11 @@ class APIService {
     model?: string,
     taskType?: string,
     guide?: { mode?: boolean; child?: boolean },
+    signal?: AbortSignal,
   ) {
     return this.request<TaskResult>(`/task/${taskId}/run`, {
       method: 'POST',
+      ...(signal ? { signal } : {}),
       body: JSON.stringify({
         prompt,
         context,
